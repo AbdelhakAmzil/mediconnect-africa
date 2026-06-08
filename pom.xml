@@ -18,7 +18,7 @@
         <module>discovery-service</module>
         <module>gateway-service</module>
 <!--        <module>auth-service</module>-->
-<!--        <module>patient-service</module>-->
+        <module>patient-service</module>
 <!--        <module>doctor-service</module>-->
 <!--        <module>appointment-service</module>-->
 <!--        <module>consultation-service</module>-->
