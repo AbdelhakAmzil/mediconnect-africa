@@ -9,19 +9,15 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
     <groupId>com.mediconnect</groupId>
-    <artifactId>ai-service</artifactId>
+    <artifactId>iot-service</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>consultation-service</name>
+    <name>iot-service</name>
     <description>ai-service</description>
 
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-data-redis</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -41,6 +37,12 @@
         </dependency>
 
         <dependency>
+            <groupId>com.influxdb</groupId>
+            <artifactId>influxdb-client-java</artifactId>
+            <version>7.1.0</version>
+        </dependency>
+
+        <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <optional>true</optional>
@@ -56,7 +58,6 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-
 
     <build>
         <plugins>
