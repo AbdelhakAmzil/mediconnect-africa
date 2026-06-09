@@ -4,6 +4,7 @@
     <mapping directory="" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/appointment-service" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/config-service" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/consultation-service" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/discovery-service" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/doctor-service" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/gateway-service" vcs="Git" />
