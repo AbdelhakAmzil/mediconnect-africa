@@ -22,7 +22,7 @@
         <module>doctor-service</module>
         <module>appointment-service</module>
 <!--        <module>consultation-service</module>-->
-<!--        <module>notification-service</module>-->
+        <module>notification-service</module>
 <!--        <module>iot-service</module>-->
 <!--        <module>analytics-service</module>-->
 <!--        <module>ai-service</module>-->
