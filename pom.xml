@@ -20,7 +20,7 @@
 <!--        <module>auth-service</module>-->
         <module>patient-service</module>
         <module>doctor-service</module>
-<!--        <module>appointment-service</module>-->
+        <module>appointment-service</module>
 <!--        <module>consultation-service</module>-->
 <!--        <module>notification-service</module>-->
 <!--        <module>iot-service</module>-->
