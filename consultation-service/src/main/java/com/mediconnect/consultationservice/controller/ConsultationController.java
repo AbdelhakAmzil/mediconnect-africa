@@ -17,6 +17,11 @@ public class ConsultationController {
 
     private final ConsultationService consultationService;
 
+    @GetMapping
+    public ResponseEntity<List<ConsultationResponse>> getAll() {
+        return ResponseEntity.ok(consultationService.getAllConsultations());
+    }
+
     @PostMapping
     public ResponseEntity<ConsultationResponse> create(
             @RequestBody ConsultationRequest request) {

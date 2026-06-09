@@ -67,6 +67,12 @@ public class ConsultationService {
         return toResponse(saved);
     }
 
+    public List<ConsultationResponse> getAllConsultations() {
+        return consultationRepository.findAll()
+                .stream().map(this::toResponse)
+                .collect(Collectors.toList());
+    }
+
     public ConsultationResponse getById(String id) {
         return consultationRepository.findById(id)
                 .map(this::toResponse)
