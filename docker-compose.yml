@@ -1,6 +1,6 @@
 services:
 
-  # ─── PostgreSQL (existant — réutilisé) ───────────────────────────────────
+  # ─── PostgreSQL ──────────────────────────────────────────────────────────
   postgres:
     container_name: ms_pg_sql
     image: postgres
@@ -16,7 +16,7 @@ services:
       - mediconnect-net
     restart: unless-stopped
 
-  # ─── pgAdmin (existant — réutilisé) ──────────────────────────────────────
+  # ─── pgAdmin ─────────────────────────────────────────────────────────────
   pgadmin:
     container_name: ms_pgadmin
     image: dpage/pgadmin4
@@ -30,7 +30,7 @@ services:
       - mediconnect-net
     restart: unless-stopped
 
-  # ─── MongoDB (existant — réutilisé) ──────────────────────────────────────
+  # ─── MongoDB ─────────────────────────────────────────────────────────────
   mongodb:
     container_name: ms_mongo_db
     image: mongo
@@ -44,7 +44,7 @@ services:
     networks:
       - mediconnect-net
 
-  # ─── Mongo Express (existant — réutilisé) ────────────────────────────────
+  # ─── Mongo Express ───────────────────────────────────────────────────────
   mongo-express:
     container_name: ms_mongo_express
     image: mongo-express
@@ -58,7 +58,7 @@ services:
     networks:
       - mediconnect-net
 
-  # ─── MailDev (existant — réutilisé) ──────────────────────────────────────
+  # ─── MailDev ─────────────────────────────────────────────────────────────
   mail-dev:
     container_name: ms_mail_dev
     image: maildev/maildev
@@ -68,7 +68,7 @@ services:
     networks:
       - mediconnect-net
 
-  # ─── Redis (NOUVEAU) ─────────────────────────────────────────────────────
+  # ─── Redis ───────────────────────────────────────────────────────────────
   redis:
     container_name: mediconnect-redis
     image: redis:7-alpine
@@ -81,7 +81,7 @@ services:
       - mediconnect-net
     restart: unless-stopped
 
-  # ─── Keycloak (NOUVEAU) ──────────────────────────────────────────────────
+  # ─── Keycloak ────────────────────────────────────────────────────────────
   keycloak:
     container_name: mediconnect-keycloak
     image: quay.io/keycloak/keycloak:24.0.0
@@ -98,26 +98,7 @@ services:
       - mediconnect-net
     restart: unless-stopped
 
-  # ─── InfluxDB (NOUVEAU — pour IoT service) ───────────────────────────────
-  influxdb:
-    container_name: mediconnect-influxdb
-    image: influxdb:2.7
-    ports:
-      - "8086:8086"
-    environment:
-      DOCKER_INFLUXDB_INIT_MODE: setup
-      DOCKER_INFLUXDB_INIT_USERNAME: abdoozil
-      DOCKER_INFLUXDB_INIT_PASSWORD: abdoozil123
-      DOCKER_INFLUXDB_INIT_ORG: mediconnect
-      DOCKER_INFLUXDB_INIT_BUCKET: iot-data
-      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: mediconnect-influx-token-2024
-    volumes:
-      - influxdb:/var/lib/influxdb2
-    networks:
-      - mediconnect-net
-    restart: unless-stopped
-
-  # ─── Kafka UI (NOUVEAU — interface visuelle Kafka) ────────────────────────
+  # ─── Kafka UI ────────────────────────────────────────────────────────────
   kafka-ui:
     container_name: mediconnect-kafka-ui
     image: provectuslabs/kafka-ui:latest
@@ -132,6 +113,105 @@ services:
       - mediconnect-net
     restart: unless-stopped
 
+  # =========================================================================
+  # OBSERVABILITÉ
+  # =========================================================================
+
+  # ─── Zipkin (Distributed Tracing) ────────────────────────────────────────
+  zipkin:
+    container_name: mediconnect-zipkin
+    image: openzipkin/zipkin:3.4
+    ports:
+      - "9411:9411"
+    networks:
+      - mediconnect-net
+    restart: unless-stopped
+
+  # ─── Prometheus (Métriques) ──────────────────────────────────────────────
+  prometheus:
+    container_name: mediconnect-prometheus
+    image: prom/prometheus:v2.53.0
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./observability/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./observability/prometheus/alert-rules.yml:/etc/prometheus/alert-rules.yml
+      - prometheus:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.enable-lifecycle'
+      - '--storage.tsdb.retention.time=15d'
+    networks:
+      - mediconnect-net
+    restart: unless-stopped
+    depends_on:
+      - alertmanager
+
+  # ─── Alertmanager ────────────────────────────────────────────────────────
+  alertmanager:
+    container_name: mediconnect-alertmanager
+    image: prom/alertmanager:v0.27.0
+    ports:
+      - "9093:9093"
+    volumes:
+      - ./observability/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml
+    command:
+      - '--config.file=/etc/alertmanager/alertmanager.yml'
+    networks:
+      - mediconnect-net
+    restart: unless-stopped
+
+  # ─── Loki (Agrégation de logs) ───────────────────────────────────────────
+  loki:
+    container_name: mediconnect-loki
+    image: grafana/loki:3.0.0
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./observability/loki/loki-config.yml:/etc/loki/local-config.yaml
+      - loki:/loki
+    command: -config.file=/etc/loki/local-config.yaml
+    networks:
+      - mediconnect-net
+    restart: unless-stopped
+
+  # ─── Promtail (Collecte des logs → Loki) ─────────────────────────────────
+  promtail:
+    container_name: mediconnect-promtail
+    image: grafana/promtail:3.0.0
+    volumes:
+      - ./observability/loki/promtail-config.yml:/etc/promtail/config.yml
+      - /var/log:/var/log:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+    command: -config.file=/etc/promtail/config.yml
+    networks:
+      - mediconnect-net
+    restart: unless-stopped
+    depends_on:
+      - loki
+
+  # ─── Grafana (Dashboards) ────────────────────────────────────────────────
+  grafana:
+    container_name: mediconnect-grafana
+    image: grafana/grafana:11.0.0
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin123
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - ./observability/grafana/provisioning:/etc/grafana/provisioning
+      - grafana:/var/lib/grafana
+    networks:
+      - mediconnect-net
+    restart: unless-stopped
+    depends_on:
+      - prometheus
+      - loki
+      - zipkin
+
 networks:
   mediconnect-net:
     driver: bridge
@@ -140,4 +220,7 @@ volumes:
   postgres:
   mongo:
   redis:
+  prometheus:
+  grafana:
+  loki:
   influxdb:

@@ -1,0 +1,34 @@
+apiVersion: 1
+
+datasources:
+
+  # ─── Prometheus ──────────────────────────────────────────────────────────
+  - name: Prometheus
+    type: prometheus
+    access: proxy
+    url: http://prometheus:9090
+    isDefault: true
+    jsonData:
+      timeInterval: '15s'
+      httpMethod: POST
+
+  # ─── Loki ────────────────────────────────────────────────────────────────
+  - name: Loki
+    type: loki
+    access: proxy
+    url: http://loki:3100
+    jsonData:
+      maxLines: 1000
+      derivedFields:
+        # Lier les traceId Loki → Zipkin
+        - datasourceUid: zipkin
+          matcherRegex: 'traceId=(\w+)'
+          name: TraceID
+          url: '$${__value.raw}'
+
+  # ─── Zipkin ──────────────────────────────────────────────────────────────
+  - name: Zipkin
+    type: zipkin
+    uid: zipkin
+    access: proxy
+    url: http://zipkin:9411

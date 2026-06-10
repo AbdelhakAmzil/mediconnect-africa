@@ -53,6 +53,28 @@
             <artifactId>postgresql</artifactId>
             <scope>runtime</scope>
         </dependency>
+        <!-- ── Micrometer Prometheus (métriques) ── -->
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-prometheus</artifactId>
+        </dependency>
+
+        <!-- ── Distributed Tracing → Zipkin ── -->
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-tracing-bridge-brave</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.zipkin.reporter2</groupId>
+            <artifactId>zipkin-reporter-brave</artifactId>
+        </dependency>
+
+        <!-- ── Loki Log Appender (logs structurés → Loki) ── -->
+        <dependency>
+            <groupId>com.github.loki4j</groupId>
+            <artifactId>loki-logback-appender</artifactId>
+            <version>1.5.2</version>
+        </dependency>
     </dependencies>
 
     <build>

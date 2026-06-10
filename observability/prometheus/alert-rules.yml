@@ -1,0 +1,86 @@
+groups:
+
+  # ─── Disponibilité des services ──────────────────────────────────────────
+  - name: service-availability
+    rules:
+      - alert: ServiceDown
+        expr: up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "🔴 Service {{ $labels.job }} est DOWN"
+          description: "Le service {{ $labels.job }} ne répond plus depuis 1 minute."
+
+  # ─── JVM / Mémoire ───────────────────────────────────────────────────────
+  - name: jvm-memory
+    rules:
+      - alert: HighJvmMemoryUsage
+        expr: |
+          (jvm_memory_used_bytes{area="heap"} / jvm_memory_max_bytes{area="heap"}) * 100 > 85
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "⚠️ Mémoire JVM élevée sur {{ $labels.job }}"
+          description: "Utilisation heap JVM > 85% sur {{ $labels.job }} depuis 2 minutes."
+
+      - alert: CriticalJvmMemoryUsage
+        expr: |
+          (jvm_memory_used_bytes{area="heap"} / jvm_memory_max_bytes{area="heap"}) * 100 > 95
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "🔴 Mémoire JVM critique sur {{ $labels.job }}"
+          description: "Utilisation heap JVM > 95% sur {{ $labels.job }}."
+
+  # ─── HTTP / Latence ──────────────────────────────────────────────────────
+  - name: http-performance
+    rules:
+      - alert: HighHttpErrorRate
+        expr: |
+          rate(http_server_requests_seconds_count{status=~"5.."}[5m])
+          / rate(http_server_requests_seconds_count[5m]) * 100 > 5
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "⚠️ Taux d'erreurs HTTP élevé sur {{ $labels.job }}"
+          description: "Plus de 5% d'erreurs 5xx sur {{ $labels.job }} depuis 2 minutes."
+
+      - alert: SlowHttpRequests
+        expr: |
+          histogram_quantile(0.95,
+            rate(http_server_requests_seconds_bucket[5m])
+          ) > 2
+        for: 3m
+        labels:
+          severity: warning
+        annotations:
+          summary: "⚠️ Requêtes lentes sur {{ $labels.job }}"
+          description: "P95 de latence > 2 secondes sur {{ $labels.job }}."
+
+  # ─── Circuit Breaker (Resilience4j) ──────────────────────────────────────
+  - name: circuit-breaker
+    rules:
+      - alert: CircuitBreakerOpen
+        expr: resilience4j_circuitbreaker_state{state="open"} == 1
+        for: 30s
+        labels:
+          severity: critical
+        annotations:
+          summary: "🔴 Circuit Breaker OUVERT sur {{ $labels.job }}"
+          description: "Le circuit breaker {{ $labels.name }} est ouvert sur {{ $labels.job }}."
+
+  # ─── Kafka ───────────────────────────────────────────────────────────────
+  - name: kafka
+    rules:
+      - alert: KafkaConsumerLag
+        expr: kafka_consumer_group_lag > 1000
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "⚠️ Lag Kafka élevé"
+          description: "Le consumer group {{ $labels.group }} a un lag > 1000 messages."

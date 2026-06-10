@@ -19,7 +19,6 @@
         <module name="config-service" />
         <module name="appointment-service" />
         <module name="gateway-service" />
-        <module name="iot-service" />
         <module name="consultation-service (1)" />
         <module name="doctor-service" />
         <module name="consultation-service" />
@@ -28,6 +27,9 @@
         <module name="notification-service" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="iot-service" target="17" />
+    </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">

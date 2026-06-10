@@ -1,0 +1,83 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    project: 'mediconnect-africa'
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+            - alertmanager:9093
+
+rule_files:
+  - "alert-rules.yml"
+
+scrape_configs:
+
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  - job_name: 'config-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['192.168.1.111:8888']
+        labels:
+          service: 'config-service'
+
+  - job_name: 'discovery-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['192.168.1.111:8761']
+        labels:
+          service: 'discovery-service'
+
+  - job_name: 'gateway-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['192.168.1.111:9000']
+        labels:
+          service: 'gateway-service'
+
+  - job_name: 'patient-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['192.168.1.111:8082']
+        labels:
+          service: 'patient-service'
+
+  - job_name: 'doctor-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['192.168.1.111:8083']
+        labels:
+          service: 'doctor-service'
+
+  - job_name: 'appointment-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['192.168.1.111:8084']
+        labels:
+          service: 'appointment-service'
+
+  - job_name: 'consultation-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['192.168.1.111:8085']
+        labels:
+          service: 'consultation-service'
+
+  - job_name: 'notification-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['192.168.1.111:8095']
+        labels:
+          service: 'notification-service'
+
+  - job_name: 'ai-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['192.168.1.111:8089']
+        labels:
+          service: 'ai-service'
